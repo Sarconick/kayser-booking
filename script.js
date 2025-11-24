@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const timeslotSelect = document.getElementById('timeslot');
   const submitBtn = document.getElementById('submitBtn');
 
-  const API_BASE = 'const API_BASE = 'https://kayser-booking-backend.onrender.com'; // backend base URL
+  // ✅ Updated backend base URL
+  const API_BASE = 'https://kayser-booking.onrender.com';
 
   // Set min date to today
   const today = new Date();
@@ -169,4 +170,3 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize timeslots for today
   if (dateInput.value) updateTimeslots(dateInput.value);
 });
-
