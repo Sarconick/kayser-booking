@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Bookings Overview</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    h1 { color: #333; }
+    .date-group { margin-top: 1.5em; }
+    .date-group h2 { margin-bottom: 0.5em; }
+    ul { list-style: none; padding: 0; }
+    li { background: #f0f0f0; margin: 5px 0; padding: 8px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>All Booked Slots</h1>
+  <button id="loadBtn">Load Bookings</button>
+  <div id="results"></div>
+
+  <script>
+    const API_BASE = 'https://kayser-booking.onrender.com';
+
+    document.getElementById('loadBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch(`${API_BASE}/bookings`);
+        if (!response.ok) throw new Error('Network error');
+        const data = await response.json();
+
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        if (data.length > 0) {
+          // Group by date
+          const grouped = {};
+          data.forEach(b => {
+            if (!grouped[b.date]) grouped[b.date] = [];
+            grouped[b.date].push(b);
+          });
+
+          Object.keys(grouped).forEach(date => {
+            const section = document.createElement('div');
+            section.className = 'date-group';
+            section.innerHTML = `<h2>${date}</h2>`;
+            const list = document.createElement('ul');
+            grouped[date].forEach(b => {
+              const li = document.createElement('li');
+              li.textContent = `${b.timeslot} — ${b.contact_name} (${b.company})`;
+              list.appendChild(li);
+            });
+            section.appendChild(list);
+            resultsDiv.appendChild(section);
+          });
+        } else {
+          resultsDiv.innerHTML = '<p>No bookings found.</p>';
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error fetching bookings');
+      }
+    });
+  </script>
+</body>
+</html>
