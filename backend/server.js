@@ -1,68 +1,83 @@
-// server.js — Node.js backend for Kayser booking form
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const path = require('path');
 const cors = require('cors');
+const { Pool } = require('pg');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Serve static frontend
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-const BOOKINGS_FILE = path.join(__dirname, 'bookings.json');
-if (!fs.existsSync(BOOKINGS_FILE)) {
-  fs.writeFileSync(BOOKINGS_FILE, JSON.stringify([]));
-}
-
-function loadBookings() {
-  return JSON.parse(fs.readFileSync(BOOKINGS_FILE));
-}
-function saveBookings(bookings) {
-  fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2));
-}
-
-// Submit booking
-app.post('/booking', (req, res) => {
-  const { contactName, contactEmail, company, vat, truckPlate,
-          reloadCity, newTruckNumber, date, timeslot } = req.body;
-
-  if (!contactName || !contactEmail || !company || !vat || !truckPlate || !date || !timeslot) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  const bookings = loadBookings();
-  const alreadyReserved = bookings.find(b => b.date === date && b.timeslot === timeslot);
-  if (alreadyReserved) {
-    return res.status(409).json({ error: 'Timeslot already reserved' });
-  }
-
-  const newBooking = {
-    timestamp: new Date().toISOString(),
-    contactName, contactEmail, company, vat, truckPlate,
-    reloadCity, newTruckNumber, date, timeslot
-  };
-
-  bookings.push(newBooking);
-  saveBookings(bookings);
-
-  res.json({ message: 'Booking successful', booking: newBooking });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
-// Get reserved slots
-app.get('/reserved', (req, res) => {
-  const { date } = req.query;
-  if (!date) return res.status(400).json({ error: 'Date required' });
+app.use(cors());
+app.use(bodyParser.json());
 
-  const bookings = loadBookings();
-  const reservedSlots = bookings.filter(b => b.date === date).map(b => b.timeslot);
-  res.json({ reservedSlots });
+// GET reserved slots for a date
+app.get('/reserved', async (req, res) => {
+  const { date } = req.query;
+  if (!date) return res.status(400).json({ error: 'Date is required' });
+
+  try {
+    const result = await pool.query(
+      'SELECT timeslot FROM bookings WHERE date = $1',
+      [date]
+    );
+    const reservedSlots = result.rows.map(r => r.timeslot);
+    res.json({ reservedSlots });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// POST booking
+app.post('/booking', async (req, res) => {
+  const {
+    contactName, contactEmail, company, vat,
+    truckPlate, reloadCity, newTruckNumber,
+    date, timeslot
+  } = req.body;
+
+  if (!date || !timeslot) {
+    return res.status(400).json({ error: 'Date and timeslot are required' });
+  }
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO bookings
+       (contact_name, contact_email, company, vat, truck_plate,
+        reload_city, new_truck_number, date, timeslot)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       RETURNING id`,
+      [contactName, contactEmail, company, vat, truckPlate,
+       reloadCity, newTruckNumber, date, timeslot]
+    );
+    res.json({ message: 'Booking confirmed', id: result.rows[0].id });
+  } catch (err) {
+    if (err.code === '23505') {
+      res.status(409).json({ error: `Timeslot ${timeslot} is already booked.` });
+    } else {
+      console.error(err);
+      res.status(500).json({ error: 'Database error' });
+    }
+  }
+});
+
+// ✅ NEW: Get all bookings grouped by date
+app.get('/bookings', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT date, timeslot, contact_name, company FROM bookings ORDER BY date, timeslot'
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
 });
 
 app.listen(PORT, () => {
-  console.log(`Booking backend running at http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
