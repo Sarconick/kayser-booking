@@ -1,0 +1,163 @@
+/* Brand variables */
+:root {
+  --brand-dark: #003366;
+  --brand-accent: #0078D7;
+  --brand-accent-dark: #005a9e;
+  --bg: #f4f6f9;
+  --text: #333;
+  --muted: #555;
+  --error: #b00020;
+  --success-bg: #d4edda;
+  --success-text: #155724;
+  --success-border: #c3e6cb;
+  --card-bg: #ffffff;
+  --input-border: #c9ced6;
+  --input-focus-shadow: rgba(0, 120, 215, 0.3);
+  --highlight-bg: #eaf3fb;
+}
+
+/* Global styles */
+* { box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* Header */
+header {
+  background: linear-gradient(180deg, var(--brand-dark), #022a4f);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+header img {
+  height: 56px;
+  vertical-align: middle;
+  margin-right: 12px;
+}
+header h1 {
+  display: inline-block;
+  font-size: 1.7em;
+  margin: 0;
+  vertical-align: middle;
+}
+
+/* Form container */
+form {
+  max-width: 760px;
+  margin: 28px auto;
+  background: var(--card-bg);
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  border: 1px solid #e4e8ee;
+}
+
+/* Fieldsets */
+fieldset { border: 0; margin: 0 0 18px; padding: 0; }
+legend { font-weight: 600; color: var(--brand-dark); margin-bottom: 10px; }
+
+/* Labels and inputs */
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 600;
+  color: var(--brand-dark);
+}
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+input:hover, select:hover { background-color: #f9fbfd; }
+input:focus, select:focus {
+  border-color: var(--brand-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--input-focus-shadow);
+}
+
+/* Required indicator */
+.required { color: #d12d2d; font-weight: 700; }
+
+/* Error and validation states */
+.error { color: var(--error); font-size: 0.9em; margin-top: 6px; }
+.is-invalid { border-color: #e08a8a !important; background-color: #fff5f5; }
+.is-valid { border-color: #77b978 !important; background-color: #f4fbf4; }
+
+/* Collapsible section */
+.collapsible {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 360ms ease, opacity 280ms ease;
+}
+.collapsible.show {
+  max-height: 680px;
+  opacity: 1;
+  background-color: var(--highlight-bg);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px dashed #cfe1f5;
+}
+
+/* Buttons */
+button {
+  padding: 12px 20px;
+  background: var(--brand-accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.05em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.06s ease;
+  position: relative;
+}
+button:hover { background: var(--brand-accent-dark); }
+button:active { transform: translateY(1px); }
+button:focus { box-shadow: 0 0 0 3px var(--input-focus-shadow); }
+
+.btn-primary .btn-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.6);
+  border-top-color: white;
+  border-radius: 50%;
+  display: none;
+  margin-left: 10px;
+  animation: spin 700ms linear infinite;
+}
+.btn-primary.loading .btn-label { opacity: 0.7; }
+.btn-primary.loading .btn-spinner { display: inline-block; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Success banner */
+.success-message {
+  display: none;
+  margin: 16px auto;
+  max-width: 760px;
+  padding: 14px;
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 0.95em;
+  color: #333;
+  background-color: #f0f4fa;
+  border-top: 1px solid #e4e8ee;
+}
