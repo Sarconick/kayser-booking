@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Booked Slots Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    h1 { color: #333; }
+    label { font-weight: bold; }
+    #results { margin-top: 1em; }
+    ul { list-style: none; padding: 0; }
+    li { background: #f0f0f0; margin: 5px 0; padding: 8px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>View Booked Slots</h1>
+  <label for="date">Select Date:</label>
+  <input type="date" id="date" />
+  <button id="checkBtn">Check Slots</button>
+
+  <div id="results"></div>
+
+  <script>
+    const API_BASE = 'https://kayser-booking.onrender.com';
+
+    document.getElementById('checkBtn').addEventListener('click', async () => {
+      const date = document.getElementById('date').value;
+      if (!date) {
+        alert('Please select a date');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/reserved?date=${date}`);
+        if (!response.ok) throw new Error('Network error');
+        const data = await response.json();
+
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = `<h2>Booked Slots for ${date}</h2>`;
+
+        if (data.reservedSlots && data.reservedSlots.length > 0) {
+          const list = document.createElement('ul');
+          data.reservedSlots.forEach(slot => {
+            const li = document.createElement('li');
+            li.textContent = slot;
+            list.appendChild(li);
+          });
+          resultsDiv.appendChild(list);
+        } else {
+          resultsDiv.innerHTML += '<p>No slots booked for this date.</p>';
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error fetching booked slots');
+      }
+    });
+  </script>
+</body>
+</html>
